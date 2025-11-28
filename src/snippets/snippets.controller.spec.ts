@@ -4,14 +4,19 @@ import { SnippetsService } from './snippets.service';
 import { Response } from 'express';
 
 const mockSnippetsService = {
-  create: jest.fn(),
-  findAll: jest.fn(),
-  findRandom: jest.fn(),
-  findSnippetOfDay: jest.fn(),
-  exportBatch: jest.fn(),
-  findOne: jest.fn(),
-  update: jest.fn(),
-  remove: jest.fn(),
+  create: jest.fn().mockResolvedValue({ id: 1, title: 'Test' }),
+  findAll: jest.fn().mockResolvedValue({ 
+    data: [], 
+    total: 0, 
+    page: 1, 
+    lastPage: 0 
+  }),
+  findRandom: jest.fn().mockResolvedValue({ id: 1 }),
+  findSnippetOfDay: jest.fn().mockResolvedValue({ id: 1 }),
+  exportBatch: jest.fn().mockResolvedValue([{ id: 1, title: 'Export' }]),
+  findOne: jest.fn().mockResolvedValue({ id: 1 }),
+  update: jest.fn().mockResolvedValue({ id: 1, title: 'Updated' }),
+  remove: jest.fn().mockResolvedValue({ id: 1 }),
 };
 
 const mockResponse = {
@@ -48,9 +53,9 @@ describe('SnippetsController', () => {
     expect(service.create).toHaveBeenCalledWith(1, dto);
   });
 
-  it('deve listar snippets', async () => {
-    await controller.findAll('js', 'tag', '1');
-    expect(service.findAll).toHaveBeenCalledWith('js', 'tag', 1);
+  it('deve listar snippets com paginação', async () => {
+    await controller.findAll('js', 'tag', '2');
+    expect(service.findAll).toHaveBeenCalledWith('js', 'tag', 2);
   });
 
   it('deve buscar um snippet por id', async () => {
@@ -72,13 +77,12 @@ describe('SnippetsController', () => {
   });
 
   it('deve exportar snippets em lote', async () => {
-    const mockData = [{ id: 1, title: 'Export' }];
-    service.exportBatch.mockResolvedValue(mockData);
-
     await controller.export(mockResponse);
 
     expect(service.exportBatch).toHaveBeenCalled();
     expect(mockResponse.setHeader).toHaveBeenCalledWith('Content-Type', 'application/json');
-    expect(mockResponse.send).toHaveBeenCalledWith(JSON.stringify(mockData, null, 2));
+    expect(mockResponse.send).toHaveBeenCalledWith(
+      JSON.stringify([{ id: 1, title: 'Export' }], null, 2)
+    );
   });
 });

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSnippetDto } from './dto/create-snippet.dto';
 import { UpdateSnippetDto } from './dto/update-snippet.dto';
@@ -54,7 +54,8 @@ export class SnippetsService {
     const result = await this.prisma.$queryRawUnsafe(
       `SELECT * FROM "Snippet" ORDER BY RANDOM() LIMIT 1;`
     );
-    return Array.isArray(result) ? result[0] : null;
+    const snippet = Array.isArray(result) ? result[0] : null;
+    return snippet;
   }
 
   async findSnippetOfDay() {
@@ -71,19 +72,32 @@ export class SnippetsService {
   }
 
   async update(id: number, userId: number, dto: UpdateSnippetDto) {
-    const snippet = await this.findOne(id);
-    if (snippet.authorId !== userId) throw new NotFoundException('Permissão negada ou não encontrado');
+    const snippet = await this.prisma.snippet.findUnique({ where: { id } });
+    
+    if (!snippet) throw new NotFoundException('Snippet não encontrado');
+    
+    if (snippet.authorId !== userId) {
+      throw new ForbiddenException('Você não tem permissão para editar este snippet');
+    }
     
     return this.prisma.snippet.update({ where: { id }, data: dto });
   }
 
   async remove(id: number, userId: number) {
-    const snippet = await this.findOne(id);
-    if (snippet.authorId !== userId) throw new NotFoundException('Permissão negada');
+    const snippet = await this.prisma.snippet.findUnique({ where: { id } });
+
+    if (!snippet) throw new NotFoundException('Snippet não encontrado');
+
+    if (snippet.authorId !== userId) {
+      throw new ForbiddenException('Você não tem permissão para remover este snippet');
+    }
+
     return this.prisma.snippet.delete({ where: { id } });
   }
 
   async exportBatch() {
-    return this.prisma.snippet.findMany();
+    return this.prisma.snippet.findMany({
+      include: { author: { select: { name: true } } }
+    });
   }
 }

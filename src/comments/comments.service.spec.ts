@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommentsService } from './comments.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 const mockPrismaService = {
-  snippet: {
-    findUnique: jest.fn(),
-  },
+  snippet: { findUnique: jest.fn() },
   comment: {
     create: jest.fn(),
     findMany: jest.fn(),
@@ -66,11 +64,19 @@ describe('CommentsService', () => {
       expect(prisma.comment.delete).toHaveBeenCalledWith({ where: { id: 10 } });
     });
 
-    it('deve lançar erro se o usuário não for o dono', async () => {
+    it('deve lançar ForbiddenException se o usuário não for o dono', async () => {
       prisma.comment.findUnique.mockResolvedValue({ id: 10, userId: 2 });
 
       await expect(
         service.remove(10, 1)
+      ).rejects.toThrow(ForbiddenException);
+    });
+    
+    it('deve lançar NotFoundException se o comentário não existir', async () => {
+      prisma.comment.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.remove(99, 1)
       ).rejects.toThrow(NotFoundException);
     });
   });

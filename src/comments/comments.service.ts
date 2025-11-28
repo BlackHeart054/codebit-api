@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 
@@ -30,8 +30,13 @@ export class CommentsService {
 
   async remove(id: number, userId: number) {
     const comment = await this.prisma.comment.findUnique({ where: { id } });
-    if (!comment || comment.userId !== userId) throw new NotFoundException('Não permitido');
+    
+    if (!comment) throw new NotFoundException('Comentário não encontrado');
+    
+    if (comment.userId !== userId) {
+      throw new ForbiddenException('Você não tem permissão para apagar este comentário');
+    }
 
-    return this.prisma.comment.delete({ where: { id } });
+    await this.prisma.comment.delete({ where: { id } });
   }
 }
