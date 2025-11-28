@@ -37,7 +37,7 @@ describe('SnippetsService', () => {
   });
 
   describe('create', () => {
-    it('should create a snippet', async () => {
+    it('deve criar um snippet', async () => {
       const dto = { title: 'Test', language: 'JS', code: 'console.log()', tags: [] };
       const expectedResult = { id: 1, ...dto, authorId: 1 };
       
@@ -53,7 +53,7 @@ describe('SnippetsService', () => {
   });
 
   describe('findAll', () => {
-    it('should return paginated snippets', async () => {
+    it('deve retornar snippets paginados', async () => {
       prisma.snippet.findMany.mockResolvedValue([{ id: 1, title: 'Test' }]);
       prisma.snippet.count.mockResolvedValue(1);
 
@@ -77,7 +77,7 @@ describe('SnippetsService', () => {
   });
 
   describe('findOne', () => {
-    it('should return a snippet with comments included', async () => {
+    it('deve retornar um snippet com comentário', async () => {
       const mockSnippet = { id: 1, title: 'Test', author: { name: 'Dev' }, comments: [] };
       prisma.snippet.findUnique.mockResolvedValue(mockSnippet);
 
@@ -96,14 +96,14 @@ describe('SnippetsService', () => {
       });
     });
 
-    it('should throw NotFoundException if snippet not found', async () => {
+    it('deve retornar um NotFoundException caso não ache um snippet', async () => {
       prisma.snippet.findUnique.mockResolvedValue(null);
       await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('findRandom', () => {
-    it('should return a random snippet', async () => {
+    it('deve retornar um snippet aleatório', async () => {
       const mockSnippet = { id: 1, title: 'Random' };
       prisma.$queryRawUnsafe.mockResolvedValue([mockSnippet]);
 
@@ -113,7 +113,7 @@ describe('SnippetsService', () => {
       expect(result).toEqual(mockSnippet);
     });
 
-    it('should return null if no snippets exist', async () => {
+    it('deve retornar null se não existir um snippet', async () => {
       prisma.$queryRawUnsafe.mockResolvedValue([]);
       const result = await service.findRandom();
       expect(result).toBeNull();
@@ -121,7 +121,7 @@ describe('SnippetsService', () => {
   });
 
   describe('findSnippetOfDay', () => {
-    it('should return snippet of the day', async () => {
+    it('deve retornar o snippet do dia', async () => {
       prisma.snippet.count.mockResolvedValue(10);
       prisma.snippet.findFirst.mockResolvedValue({ id: 5 });
 
@@ -134,7 +134,7 @@ describe('SnippetsService', () => {
       expect(result).toEqual({ id: 5 });
     });
 
-    it('should return null if count is 0', async () => {
+    it('deve retornar null se o contador for 0', async () => {
       prisma.snippet.count.mockResolvedValue(0);
       const result = await service.findSnippetOfDay();
       expect(result).toBeNull();
@@ -142,7 +142,7 @@ describe('SnippetsService', () => {
   });
 
   describe('update', () => {
-    it('should update if user is the author', async () => {
+    it('deve atualizar se o usuário for dono do snippet', async () => {
       prisma.snippet.findUnique.mockResolvedValue({ id: 1, authorId: 1 });
       prisma.snippet.update.mockResolvedValue({ id: 1, title: 'Updated' });
 
@@ -155,19 +155,19 @@ describe('SnippetsService', () => {
       });
     });
 
-    it('should throw NotFoundException if snippet does not exist', async () => {
+    it('deve retornar um NotFoundException se o snippet não existir', async () => {
       prisma.snippet.findUnique.mockResolvedValue(null);
       await expect(service.update(1, 1, {})).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw ForbiddenException if user is not the author', async () => {
+    it('deve retornar um ForbiddenException se o usuário não for o autor', async () => {
       prisma.snippet.findUnique.mockResolvedValue({ id: 1, authorId: 2 });
       await expect(service.update(1, 1, {})).rejects.toThrow(ForbiddenException);
     });
   });
 
   describe('remove', () => {
-    it('should remove if user is the author', async () => {
+    it('deve remover se o usuário for o autor', async () => {
       prisma.snippet.findUnique.mockResolvedValue({ id: 1, authorId: 1 });
       prisma.snippet.delete.mockResolvedValue({ id: 1 });
 
@@ -176,19 +176,19 @@ describe('SnippetsService', () => {
       expect(prisma.snippet.delete).toHaveBeenCalledWith({ where: { id: 1 } });
     });
 
-    it('should throw NotFoundException if snippet does not exist', async () => {
+    it('deve retornar NotFoundException se o snippet não existir', async () => {
       prisma.snippet.findUnique.mockResolvedValue(null);
       await expect(service.remove(1, 1)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw ForbiddenException if user is not the author', async () => {
+    it('deve retornar ForbiddenException se o usuário não for o autor', async () => {
       prisma.snippet.findUnique.mockResolvedValue({ id: 1, authorId: 2 });
       await expect(service.remove(1, 1)).rejects.toThrow(ForbiddenException);
     });
   });
 
   describe('exportBatch', () => {
-    it('should return all snippets', async () => {
+    it('deve retornar todos os snippets', async () => {
       prisma.snippet.findMany.mockResolvedValue([{ id: 1 }]);
       await service.exportBatch();
       expect(prisma.snippet.findMany).toHaveBeenCalled();
