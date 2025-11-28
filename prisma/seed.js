@@ -69,7 +69,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var faker_1 = require("@faker-js/faker"); // Usando dados em PT-BR
+var faker_1 = require("@faker-js/faker");
 var edge_1 = require("@prisma/client/edge");
 var bcrypt = __importStar(require("bcrypt"));
 var prisma = new edge_1.PrismaClient();
@@ -82,12 +82,8 @@ function main() {
             switch (_a.label) {
                 case 0:
                     console.log('🌱 Iniciando o seed...');
-                    // 1. Limpar banco de dados (opcional, cuidado em produção!)
-                    // A ordem importa por causa das chaves estrangeiras (delete snippet antes de user)
                     return [4 /*yield*/, prisma.snippet.deleteMany()];
                 case 1:
-                    // 1. Limpar banco de dados (opcional, cuidado em produção!)
-                    // A ordem importa por causa das chaves estrangeiras (delete snippet antes de user)
                     _a.sent();
                     return [4 /*yield*/, prisma.user.deleteMany()];
                 case 2:
@@ -121,7 +117,6 @@ function main() {
                     return [4 /*yield*/, Promise.all(users)];
                 case 5:
                     createdUsers = _a.sent();
-                    // Adiciona o admin na lista para ele também ter snippets
                     createdUsers.push(admin);
                     console.log("\uD83D\uDC65 ".concat(createdUsers.length, " usu\u00E1rios gerados."));
                     snippets = [];
@@ -130,13 +125,13 @@ function main() {
                         randomTags = faker_1.fakerPT_BR.helpers.arrayElements(TAGS, { min: 1, max: 3 });
                         snippets.push(prisma.snippet.create({
                             data: {
-                                title: faker_1.fakerPT_BR.hacker.phrase(), // Gera frases "tech" engraçadas
+                                title: faker_1.fakerPT_BR.hacker.phrase(),
                                 language: faker_1.fakerPT_BR.helpers.arrayElement(LANGUAGES),
                                 code: generateFakeCode(),
                                 description: faker_1.fakerPT_BR.lorem.paragraph(),
                                 tags: randomTags,
                                 authorId: randomAuthor.id,
-                                createdAt: faker_1.fakerPT_BR.date.past(), // Datas passadas aleatórias
+                                createdAt: faker_1.fakerPT_BR.date.past(),
                             },
                         }));
                     }
@@ -150,7 +145,6 @@ function main() {
         });
     });
 }
-// Função auxiliar para gerar um código fake visualmente bonitinho
 function generateFakeCode() {
     return "\nfunction ".concat(faker_1.fakerPT_BR.hacker.verb(), "() {\n  const ").concat(faker_1.fakerPT_BR.hacker.noun(), " = \"").concat(faker_1.fakerPT_BR.hacker.adjective(), "\";\n  if (").concat(faker_1.fakerPT_BR.datatype.boolean(), ") {\n    return console.log(\"Codebit API Rocks!\");\n  }\n  // ").concat(faker_1.fakerPT_BR.hacker.phrase(), "\n  return null;\n}");
 }

@@ -3,7 +3,6 @@ import { SnippetsController } from './snippets.controller';
 import { SnippetsService } from './snippets.service';
 import { Response } from 'express';
 
-// Mock do Service
 const mockSnippetsService = {
   create: jest.fn(),
   findAll: jest.fn(),
@@ -15,7 +14,6 @@ const mockSnippetsService = {
   remove: jest.fn(),
 };
 
-// Mock do objeto Response do Express para o endpoint de exportação
 const mockResponse = {
   setHeader: jest.fn(),
   send: jest.fn(),
@@ -43,7 +41,7 @@ describe('SnippetsController', () => {
 
   it('deve criar um snippet', async () => {
     const dto = { title: 'Test', language: 'JS', code: '...', tags: [] };
-    const req = { user: { userId: 1 } }; // Simulando o Request injetado pelo Guard
+    const req = { user: { userId: 1 } };
     
     await controller.create(req, dto);
     

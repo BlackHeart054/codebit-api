@@ -37,9 +37,7 @@ describe('CommentsService', () => {
 
   describe('create', () => {
     it('deve criar um comentário se o snippet existir', async () => {
-      // Mock: Snippet existe
       prisma.snippet.findUnique.mockResolvedValue({ id: 1 });
-      // Mock: Retorno do create
       prisma.comment.create.mockResolvedValue({ id: 1, content: 'Nice', userId: 1, snippetId: 1 });
 
       const dto = { content: 'Nice', snippetId: 1 };
@@ -61,20 +59,18 @@ describe('CommentsService', () => {
 
   describe('remove', () => {
     it('deve deletar se o usuário for o dono', async () => {
-      // Mock: Comentário existe e pertence ao user 1
       prisma.comment.findUnique.mockResolvedValue({ id: 10, userId: 1 });
       
-      await service.remove(10, 1); // User 1 tentando deletar
+      await service.remove(10, 1);
 
       expect(prisma.comment.delete).toHaveBeenCalledWith({ where: { id: 10 } });
     });
 
     it('deve lançar erro se o usuário não for o dono', async () => {
-      // Mock: Comentário pertence ao user 2
       prisma.comment.findUnique.mockResolvedValue({ id: 10, userId: 2 });
 
       await expect(
-        service.remove(10, 1) // User 1 tentando deletar
+        service.remove(10, 1)
       ).rejects.toThrow(NotFoundException);
     });
   });

@@ -7,7 +7,6 @@ export class CommentsService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: number, dto: CreateCommentDto) {
-    // Verifica se o snippet existe
     const snippet = await this.prisma.snippet.findUnique({ where: { id: dto.snippetId } });
     if (!snippet) throw new NotFoundException('Snippet não encontrado');
 
@@ -17,11 +16,10 @@ export class CommentsService {
         snippetId: dto.snippetId,
         userId: userId,
       },
-      include: { user: { select: { name: true } } } // Retorna quem comentou
+      include: { user: { select: { name: true } } }
     });
   }
 
-  // Listar comentários de um Snippet específico
   async findBySnippet(snippetId: number) {
     return this.prisma.comment.findMany({
       where: { snippetId },
@@ -30,7 +28,6 @@ export class CommentsService {
     });
   }
 
-  // Deletar comentário (apenas dono)
   async remove(id: number, userId: number) {
     const comment = await this.prisma.comment.findUnique({ where: { id } });
     if (!comment || comment.userId !== userId) throw new NotFoundException('Não permitido');

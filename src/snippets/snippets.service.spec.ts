@@ -34,7 +34,6 @@ describe('SnippetsService', () => {
   });
 
   it('should return a snippet', async () => {
-    // Mock do retorno do banco
     const mockSnippet = { id: 1, title: 'Test', author: { name: 'Dev' }, comments: [] };
     mockPrismaService.snippet.findUnique.mockResolvedValue(mockSnippet);
 
@@ -42,8 +41,6 @@ describe('SnippetsService', () => {
 
     expect(result).toEqual(mockSnippet);
     
-    // ATUALIZAÇÃO IMPORTANTE AQUI:
-    // Agora verificamos se ele chamou o banco pedindo também os comentários
     expect(mockPrismaService.snippet.findUnique).toHaveBeenCalledWith({
       where: { id: 1 },
       include: { 
