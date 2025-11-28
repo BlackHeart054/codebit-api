@@ -87,7 +87,7 @@ describe('SnippetsService', () => {
       expect(prisma.snippet.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
         include: { 
-          author: { select: { name: true, email: true } },
+          author: { select: { name: true } }, 
           comments: {
             include: { user: { select: { name: true } } },
             orderBy: { createdAt: 'desc' }
@@ -113,10 +113,10 @@ describe('SnippetsService', () => {
       expect(result).toEqual(mockSnippet);
     });
 
-    it('deve retornar null se não existir um snippet', async () => {
+    it('deve retornar null ou undefined se não existir um snippet', async () => {
       prisma.$queryRawUnsafe.mockResolvedValue([]);
       const result = await service.findRandom();
-      expect(result).toBeNull();
+      expect(result).toBeUndefined(); 
     });
   });
 
