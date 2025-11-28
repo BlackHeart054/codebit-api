@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:admin123@localhost:5432/codebit_db"
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  password String
+  name     String?
+  snippets Snippet[]
+  createdAt DateTime @default(now())
+}
+
+model Snippet {
+  id          Int      @id @default(autoincrement())
+  title       String
+  language    String
+  code        String   @db.Text
+  description String?
+  tags        String[]
+  authorId    Int
+  author      User     @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
