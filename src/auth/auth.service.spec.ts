@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException, ConflictException } from '@nestjs/common';
 
 jest.mock('bcrypt');
 
@@ -43,7 +43,7 @@ describe('AuthService', () => {
     it('deve retornar um token se as credenciais forem válidas', async () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       
-      const mockUser = { id: 1, email: 'test@test.com', password: 'hashed_password' };
+      const mockUser = { id: 1, email: 'test@test.com', password: 'hashed_password', name: 'Test' };
       prisma.user.findUnique.mockResolvedValue(mockUser);
 
       const result = await service.login({ email: 'test@test.com', password: 'password' });
@@ -73,19 +73,44 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    it('deve criar um novo usuário com senha hasheada', async () => {
+    it('deve criar um novo usuário se o e-mail não existir', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue('new_hashed_pass');
       
       const dto = { email: 'new@test.com', password: '123', name: 'New User' };
-      const expectedUser = { id: 1, ...dto, password: 'new_hashed_pass' };
+      const createdUserFromDb = { 
+        id: 1, 
+        email: dto.email, 
+        name: dto.name, 
+        password: 'new_hashed_pass', 
+        createdAt: new Date() 
+      };
       
-      prisma.user.create.mockResolvedValue(expectedUser);
+      prisma.user.create.mockResolvedValue(createdUserFromDb);
 
       const result = await service.register(dto);
 
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
       expect(bcrypt.hash).toHaveBeenCalledWith('123', 10);
       expect(prisma.user.create).toHaveBeenCalled();
-      expect(result).toEqual(expectedUser);
+      
+      expect(result).toEqual({
+        id: createdUserFromDb.id,
+        name: createdUserFromDb.name,
+        email: createdUserFromDb.email,
+        createdAt: createdUserFromDb.createdAt
+      });
+      expect(result).not.toHaveProperty('password');
+    });
+
+    it('deve lançar ConflictException se o e-mail já existir', async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: 1, email: 'existe@test.com' });
+
+      const dto = { email: 'existe@test.com', password: '123', name: 'User' };
+
+      await expect(service.register(dto)).rejects.toThrow(ConflictException);
+      
+      expect(prisma.user.create).not.toHaveBeenCalled();
     });
   });
 });
