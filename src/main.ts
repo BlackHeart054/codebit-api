@@ -15,7 +15,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Code Snippets API')
-    .setDescription('API profissional para compartilhamento de código.')
+    .setDescription('API para compartilhamento de código.')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
