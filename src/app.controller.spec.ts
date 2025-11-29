@@ -13,7 +13,7 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should redirect to /api', () => {
+    it('deve redirecionar para a rota /api', () => {
       expect(appController.getHome()).toEqual({ url: '/api' });
     });
   });
